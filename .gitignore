@@ -15,3 +15,6 @@ docs/evidence/spike-grid-snap.*
 docs/evidence/spike-magnet-stages.*
 web/e2e/*.png
 engine/uv.lock.bak
+
+# Claude Code local state
+.claude/
