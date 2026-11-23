@@ -156,6 +156,25 @@ export default function App() {
     }
   }, [])
 
+  const [svgBusy, setSvgBusy] = useState(false)
+  const downloadSvg = async (allStops: boolean) => {
+    if (!recipe) return
+    setSvgBusy(true)
+    try {
+      const svg = await api.previewSvg(fontId, recipe, text, allStops ? null : [axisValue], allStops)
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
+      const slug = (recipe.output.family || 'preview').replace(/\s+/g, '-')
+      a.download = allStops ? `${slug}-all-stops.svg` : `${slug}-${recipe.axis.tag}${axisValue.toFixed(0)}.svg`
+      a.click()
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000)
+    } catch (e) {
+      setError((e as Error).message)
+    } finally {
+      setSvgBusy(false)
+    }
+  }
+
   const loadRecipeFile = async (files: FileList | null) => {
     const f = files?.[0]
     if (f) setRecipe(JSON.parse(await f.text()))
@@ -246,6 +265,12 @@ export default function App() {
           </div>
           <label className="check"><input type="checkbox" checked={animate} onChange={(e) => setAnimate(e.target.checked)} /> animate</label>
           <label className="size">size <input type="range" min={24} max={320} value={size} onChange={(e) => setSize(Number(e.target.value))} /></label>
+          <div className="svg-export">
+            <button className="small" disabled={svgBusy} onClick={() => downloadSvg(false)}
+              title="Download the tester text as SVG outlines at the current slider position">⤓ SVG</button>
+            <button className="small" disabled={svgBusy} onClick={() => downloadSvg(true)}
+              title="Download one row per stop as SVG outlines">⤓ SVG · all stops</button>
+          </div>
           <span className={`status ${busy ? 'busy' : ''}`}>{busy ? 'compiling…' : status}</span>
         </div>
         {error && <div className="error-bar">{error}</div>}

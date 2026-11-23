@@ -37,6 +37,9 @@ Using it:
    tracking) reshapes the source first, including advance widths.
 3. Scrub the **DCAY** slider or tick *animate*. Click a letter to inspect its masters on the right.
 4. **Build full variable font** → download WOFF2 / TTF / recipe.json.
+5. **⤓ SVG** downloads the tester text as plain vector outlines at the current slider position;
+   **⤓ SVG · all stops** gives one labelled row per stop. Text is shaped with HarfBuzz (kerning, ligatures),
+   so it matches the preview and opens in Illustrator/Figma without the font installed.
 
 ## CLI
 
@@ -49,7 +52,8 @@ uv run fontmanip effects                                    # list effects + par
 uv run --group dev pytest                                   # tests
 ```
 
-UI end-to-end test (server must be running on :8765): `cd web && npm run e2e`.
+UI end-to-end tests (server must be running on :8765): `cd web && npm run e2e`, plus `node e2e/dice.mjs`
+(random recipes) and `node e2e/svg.mjs` (SVG export).
 
 Outputs: `<Family>-VF.ttf`, `<Family>-VF.woff2`, `recipe.json`, `report.json`.
 Use the font in CSS with `font-variation-settings: "DCAY" 50`.

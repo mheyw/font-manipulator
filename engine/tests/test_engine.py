@@ -187,3 +187,34 @@ def test_presets_build(font, preset):
     out = make_font(font, r, text="ag", jobs=1)
     assert not out.report["missing"]
     assert min(out.report["fit_mean"]) > 0.9
+
+
+def test_svg_export_matches_axis_and_shaping(font):
+    import re
+    from fontmanip.svgexport import render_svg
+    out = make_font(font, DEFAULT_RECIPE, text="AV To", jobs=1)
+    raw = to_bytes(out.font)
+    svg0 = render_svg(raw, ["AV To"], [("0", {"DCAY": 0})])
+    svg100 = render_svg(raw, ["AV To", "AV"], [("a", {"DCAY": 100}), ("b", {"DCAY": 50})], label=True)
+    assert svg0.startswith("<svg") and svg0.count("<path") == 4          # space has no outline
+    assert svg100.count("<path") == 12 and svg100.count("<text") == 2     # 2 rows x (4 + 2) glyphs
+    d0 = re.findall(r' d="([^"]+)"', svg0)[0]
+    d100 = re.findall(r' d="([^"]+)"', svg100)[0]
+    assert d0 != d100                                                   # outlines follow the axis
+    # kerning applied: "AV" pair is tighter than the sum of advances
+    xs = [float(m) for m in re.findall(r'translate\(([-\d.]+) ', svg0)]
+    adv_a = font["hmtx"][font.getBestCmap()[ord("A")]][0]
+    assert xs[1] - xs[0] < adv_a
+
+
+def test_frame_margin_covers_effect_reach(font):
+    """Long smears must not be clipped by the raster frame edge."""
+    from fontmanip.pipeline import process_glyph
+    r = Recipe(stops=[Stop(position=0, name="a"),
+                      Stop(position=100, name="b", effects=[
+                          {"type": "smear", "length": 400, "direction": "both", "variation": 0, "level": 0.3}])])
+    g = process_glyph(font, r, font.getBestCmap()[ord("o")])
+    xs = np.concatenate([c[:, 0] for c in g.masters[1]])
+    adv = font["hmtx"][font.getBestCmap()[ord("o")]][0]
+    assert xs.min() < -250 and xs.max() > adv + 250   # streaks extend well past the old 150u margin
+    assert g.fit[1] > 0.97

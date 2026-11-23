@@ -182,6 +182,35 @@ def preview(req: PreviewReq):
             "fit": [round(min(f[i] for f in fits), 3) for i in range(len(req.recipe.stops))] if fits else []}
 
 
+class SvgReq(BaseModel):
+    font_id: str
+    recipe: Recipe
+    text: str
+    values: list[float] | None = None  # axis values, one row each; None = every stop
+    size: float = 120.0                # px per em in the SVG's width/height
+    labels: bool = False
+
+
+@app.post("/api/preview.svg")
+def preview_svg(req: SvgReq):
+    from .svgexport import render_svg
+    e = _font(req.font_id)
+    text = req.text.strip("\n") or "a"
+    sub = subset_to_text(e.font, text)
+    results = ENGINE.run(e.id, e.bytes, req.recipe, sub.getGlyphOrder())
+    try:
+        vf = build_variable_font(sub, req.recipe, results)
+    except BuildError as ex:
+        raise HTTPException(500, str(ex))
+    tag = req.recipe.axis.tag
+    if req.values is None:
+        rows = [(f"{s.position:g} · {s.name}", {tag: s.position}) for s in req.recipe.stops]
+    else:
+        rows = [(f"{tag} {v:g}", {tag: v}) for v in req.values]
+    svg = render_svg(to_bytes(vf), text.split("\n"), rows, size_px=req.size, label=req.labels)
+    return Response(svg, media_type="image/svg+xml")
+
+
 class GlyphReq(BaseModel):
     font_id: str
     recipe: Recipe

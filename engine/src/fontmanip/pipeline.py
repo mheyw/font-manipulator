@@ -27,9 +27,42 @@ class GlyphResult:
     advance: int = 0                 # advance width after the recipe's base transform
 
 
+def effect_reach(spec: dict) -> float:
+    """How far (u) an effect can push ink beyond the current shape (generous upper bound)."""
+    from .effects import REGISTRY
+    eff = REGISTRY.get(spec.get("type", ""))
+    p = eff.resolve(spec) if eff else spec
+    t = spec.get("type")
+    if t == "smear":
+        return p["length"] * (1 + 1.6 * p["variation"]) + 2 * p["softness"]
+    if t == "melt":
+        return p["length"] * (1 + 2.0 * p["variation"]) + p["swell"] + 2 * p["softness"]
+    if t == "wave":
+        return 1.6 * p["amplitude"]
+    if t == "jitter":
+        return p["amount"] * 1.2
+    if t == "echo":
+        return max(abs(p["dx"]), abs(p["dy"])) * p["copies"]
+    if t in ("ink", "blur"):
+        return 1.5 * p["radius"]
+    if t == "grow":
+        return max(0.0, p["distance"])
+    if t == "roughen":
+        return p["amount"] * (1 + abs(p["bias"]))
+    if t == "spatter":
+        return p["reach"]
+    return 0.0
+
+
 def _frame_for(loops, advance, info, recipe: Recipe) -> Frame:
     em = info.upm / 1000
-    m = recipe.quality.margin * em
+    # margin must cover the furthest any stop can push ink (effects in a stop accumulate)
+    reach = 0.0
+    acc = 0.0
+    for stop in recipe.stops:
+        acc = (acc if stop.base == "previous" else 0.0) + sum(effect_reach(e) for e in stop.effects)
+        reach = max(reach, acc)
+    m = max(recipe.quality.margin, reach + 20) * em
     xmin, xmax = min(0.0, 0.0), max(float(advance), 1.0)
     ymin, ymax = float(min(info.descender, 0)), float(max(info.ascender, info.cap_height))
     for l in loops:

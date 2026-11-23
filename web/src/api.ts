@@ -94,6 +94,11 @@ export const api = {
     post('/api/preview', { font_id, recipe, text }, signal).then(j<PreviewResult>),
   glyph: (font_id: string, recipe: Recipe, char: string, signal?: AbortSignal) =>
     post('/api/glyph', { font_id, recipe, char }, signal).then(j<GlyphResult>),
+  previewSvg: async (font_id: string, recipe: Recipe, text: string, values: number[] | null, labels: boolean) => {
+    const r = await post('/api/preview.svg', { font_id, recipe, text, values, labels })
+    if (!r.ok) throw new Error(`SVG export failed (${r.status})`)
+    return r.text()
+  },
   exportStart: (font_id: string, recipe: Recipe) => post('/api/export', { font_id, recipe }).then(j<{ job: string }>),
   exportStatus: (job: string) => fetch(`/api/export/${job}`).then(j<ExportStatus>),
   exportUrl: (job: string, kind: 'ttf' | 'woff2' | 'recipe') => `/api/export/${job}/${kind}`,

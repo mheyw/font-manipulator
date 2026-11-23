@@ -88,3 +88,4 @@ main { display: flex; flex-direction: column; overflow: hidden; }
 .downloads a { color: var(--accent); }
 
 button.dice { margin-left: auto; font-size: 12px; text-transform: none; letter-spacing: 0; }
+.svg-export { display: flex; gap: 4px; }
