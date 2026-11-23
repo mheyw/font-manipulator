@@ -86,3 +86,5 @@ main { display: flex; flex-direction: column; overflow: hidden; }
 .job progress { width: 100%; }
 .downloads { display: flex; flex-direction: column; gap: 4px; }
 .downloads a { color: var(--accent); }
+
+button.dice { margin-left: auto; font-size: 12px; text-transform: none; letter-spacing: 0; }

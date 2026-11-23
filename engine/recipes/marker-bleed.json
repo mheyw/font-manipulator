@@ -1,0 +1,98 @@
+{
+  "name": "Marker bleed",
+  "seed": 8,
+  "axis": {
+    "tag": "DCAY",
+    "name": "Decay",
+    "default": 0
+  },
+  "output": {
+    "family": "FM Marker Bleed"
+  },
+  "stops": [
+    {
+      "position": 0,
+      "name": "Print",
+      "effects": []
+    },
+    {
+      "position": 33,
+      "name": "Blot",
+      "effects": [
+        {
+          "type": "grow",
+          "distance": 24,
+          "regions": 0.22,
+          "region_size": 300
+        },
+        {
+          "type": "ink",
+          "radius": 10,
+          "level": 0.45,
+          "noise": 0.15,
+          "scale": 22,
+          "regions": 0.22,
+          "region_size": 300
+        }
+      ]
+    },
+    {
+      "position": 66,
+      "name": "Slip",
+      "effects": [
+        {
+          "type": "echo",
+          "dx": 16,
+          "dy": -6,
+          "copies": 1,
+          "regions": 0.25,
+          "region_size": 400
+        },
+        {
+          "type": "grow",
+          "distance": 32,
+          "regions": 0.35,
+          "region_size": 320
+        },
+        {
+          "type": "ink",
+          "radius": 12,
+          "level": 0.45,
+          "noise": 0.15,
+          "scale": 22,
+          "regions": 0.35,
+          "region_size": 320
+        }
+      ]
+    },
+    {
+      "position": 100,
+      "name": "Soaked",
+      "effects": [
+        {
+          "type": "echo",
+          "dx": 20,
+          "dy": -8,
+          "copies": 2,
+          "regions": 0.35,
+          "region_size": 420
+        },
+        {
+          "type": "grow",
+          "distance": 40,
+          "regions": 0.5,
+          "region_size": 340
+        },
+        {
+          "type": "ink",
+          "radius": 14,
+          "level": 0.45,
+          "noise": 0.15,
+          "scale": 22,
+          "regions": 0.5,
+          "region_size": 340
+        }
+      ]
+    }
+  ]
+}

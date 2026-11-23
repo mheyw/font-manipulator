@@ -1,0 +1,18 @@
+{
+  "name": "Melt drip",
+  "seed": 5,
+  "axis": {"tag": "DCAY", "name": "Decay", "default": 0},
+  "output": {"family": "FM Melt"},
+  "stops": [
+    {"position": 0, "name": "Dry", "effects": []},
+    {"position": 33, "name": "Seep", "effects": [
+      {"type": "ink", "radius": 14, "level": 0.3, "noise": 0.08, "scale": 60, "regions": 0.3, "region_size": 260},
+      {"type": "melt", "length": 60, "variation": 0.7, "drip_size": 70, "swell": 10, "softness": 14, "level": 0.4, "regions": 0.3, "region_size": 260}]},
+    {"position": 66, "name": "Run", "effects": [
+      {"type": "ink", "radius": 20, "level": 0.25, "noise": 0.1, "scale": 70, "regions": 0.45, "region_size": 300},
+      {"type": "melt", "length": 150, "variation": 0.8, "drip_size": 75, "swell": 16, "softness": 18, "level": 0.38, "regions": 0.45, "region_size": 300}]},
+    {"position": 100, "name": "Flood", "effects": [
+      {"type": "ink", "radius": 28, "level": 0.2, "noise": 0.12, "scale": 80, "regions": 0.6, "region_size": 340},
+      {"type": "melt", "length": 260, "variation": 0.85, "drip_size": 80, "swell": 22, "softness": 22, "level": 0.36, "regions": 0.6, "region_size": 340}]}
+  ]
+}

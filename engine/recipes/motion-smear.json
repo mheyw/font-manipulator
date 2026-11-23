@@ -1,0 +1,179 @@
+{
+  "name": "Motion smear",
+  "seed": 3,
+  "axis": {
+    "tag": "DCAY",
+    "name": "Decay",
+    "default": 0
+  },
+  "output": {
+    "family": "FM Motion Smear"
+  },
+  "base": {
+    "width": 1.5,
+    "height": 0.6,
+    "slant": 24,
+    "tracking": -20
+  },
+  "stops": [
+    {
+      "position": -50,
+      "name": "Starved",
+      "effects": [
+        {
+          "type": "wave",
+          "amplitude": 30,
+          "wavelength": 220,
+          "axis": "horizontal"
+        },
+        {
+          "type": "grow",
+          "distance": -10
+        },
+        {
+          "type": "ink",
+          "radius": 8,
+          "level": 0.55,
+          "noise": 0.32,
+          "scale": 32
+        },
+        {
+          "type": "roughen",
+          "amount": 7,
+          "scale": 7,
+          "octaves": 3,
+          "bias": -0.3
+        }
+      ]
+    },
+    {
+      "position": 0,
+      "name": "Fast",
+      "effects": [
+        {
+          "type": "ink",
+          "radius": 6,
+          "level": 0.5,
+          "noise": 0.0
+        },
+        {
+          "type": "roughen",
+          "amount": 3,
+          "scale": 4,
+          "octaves": 2
+        }
+      ]
+    },
+    {
+      "position": 33,
+      "name": "Wobble",
+      "effects": [
+        {
+          "type": "wave",
+          "amplitude": 30,
+          "wavelength": 240,
+          "axis": "horizontal"
+        },
+        {
+          "type": "wave",
+          "amplitude": 14,
+          "wavelength": 300,
+          "axis": "vertical"
+        },
+        {
+          "type": "ink",
+          "radius": 18,
+          "level": 0.42,
+          "noise": 0.12,
+          "scale": 40
+        },
+        {
+          "type": "roughen",
+          "amount": 4,
+          "scale": 4,
+          "octaves": 3
+        }
+      ]
+    },
+    {
+      "position": 66,
+      "name": "Drag",
+      "effects": [
+        {
+          "type": "wave",
+          "amplitude": 45,
+          "wavelength": 260,
+          "axis": "horizontal"
+        },
+        {
+          "type": "wave",
+          "amplitude": 18,
+          "wavelength": 320,
+          "axis": "vertical"
+        },
+        {
+          "type": "smear",
+          "length": 60,
+          "direction": "both",
+          "variation": 1.0,
+          "streak_size": 10,
+          "softness": 4,
+          "level": 0.4
+        },
+        {
+          "type": "ink",
+          "radius": 26,
+          "level": 0.38,
+          "noise": 0.15,
+          "scale": 50
+        },
+        {
+          "type": "roughen",
+          "amount": 5,
+          "scale": 4,
+          "octaves": 3
+        }
+      ]
+    },
+    {
+      "position": 100,
+      "name": "Pooled",
+      "effects": [
+        {
+          "type": "wave",
+          "amplitude": 50,
+          "wavelength": 280,
+          "axis": "horizontal"
+        },
+        {
+          "type": "wave",
+          "amplitude": 24,
+          "wavelength": 340,
+          "axis": "vertical"
+        },
+        {
+          "type": "smear",
+          "length": 80,
+          "direction": "both",
+          "variation": 1.0,
+          "streak_size": 12,
+          "softness": 5,
+          "level": 0.38
+        },
+        {
+          "type": "ink",
+          "radius": 38,
+          "level": 0.33,
+          "noise": 0.18,
+          "scale": 60
+        },
+        {
+          "type": "roughen",
+          "amount": 5,
+          "scale": 4,
+          "octaves": 3
+        }
+      ]
+    }
+  ]
+}

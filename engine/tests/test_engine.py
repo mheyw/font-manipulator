@@ -167,3 +167,23 @@ def test_nested_shapes_survive_splitting():
     f = load_font(FONT.parent / "Fraunces-Variable.ttf", {"opsz": 144, "wght": 400})
     r = process_glyph(f, DEFAULT_RECIPE, "registered")
     assert r.fit[0] > 0.95, r.fit
+
+
+def test_axis_default_and_base_transform(font):
+    import json
+    r = Recipe.model_validate(json.loads((Path(__file__).parents[1] / "recipes" / "motion-smear.json").read_text()))
+    out = make_font(font, r, text="To", jobs=1)
+    ax = out.font["fvar"].axes[0]
+    assert ax.defaultValue == 0 and ax.minValue == r.stops[0].position
+    g = font.getBestCmap()[ord("T")]
+    assert out.font["hmtx"][g][0] != font["hmtx"][g][0]  # base width scales advances
+    assert not out.report["missing"]
+
+
+@pytest.mark.parametrize("preset", sorted((Path(__file__).parents[1] / "recipes").glob("*.json")),
+                         ids=lambda p: p.stem)
+def test_presets_build(font, preset):
+    r = Recipe.load(preset)
+    out = make_font(font, r, text="ag", jobs=1)
+    assert not out.report["missing"]
+    assert min(out.report["fit_mean"]) > 0.9

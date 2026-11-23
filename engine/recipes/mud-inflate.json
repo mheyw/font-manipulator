@@ -1,0 +1,139 @@
+{
+  "name": "Mud inflate",
+  "seed": 11,
+  "axis": {
+    "tag": "DCAY",
+    "name": "Decay",
+    "default": 0
+  },
+  "output": {
+    "family": "FM Mud"
+  },
+  "stops": [
+    {
+      "position": 0,
+      "name": "Firm",
+      "effects": [
+        {
+          "type": "round",
+          "radius": 35,
+          "mode": "both"
+        },
+        {
+          "type": "roughen",
+          "amount": 2,
+          "scale": 4,
+          "octaves": 2
+        }
+      ]
+    },
+    {
+      "position": 33,
+      "name": "Soft",
+      "effects": [
+        {
+          "type": "grow",
+          "distance": 18
+        },
+        {
+          "type": "round",
+          "radius": 50,
+          "mode": "both"
+        },
+        {
+          "type": "ink",
+          "radius": 20,
+          "level": 0.45,
+          "noise": 0.12,
+          "scale": 260
+        },
+        {
+          "type": "pits",
+          "density": 0.1,
+          "size": 12,
+          "margin": 16
+        },
+        {
+          "type": "roughen",
+          "amount": 2.5,
+          "scale": 4,
+          "octaves": 2
+        }
+      ]
+    },
+    {
+      "position": 66,
+      "name": "Swollen",
+      "effects": [
+        {
+          "type": "grow",
+          "distance": 32
+        },
+        {
+          "type": "round",
+          "radius": 70,
+          "mode": "both"
+        },
+        {
+          "type": "ink",
+          "radius": 25,
+          "level": 0.45,
+          "noise": 0.15,
+          "scale": 300
+        },
+        {
+          "type": "pits",
+          "density": 0.1,
+          "size": 12,
+          "margin": 16
+        },
+        {
+          "type": "roughen",
+          "amount": 2.5,
+          "scale": 4,
+          "octaves": 2
+        }
+      ]
+    },
+    {
+      "position": 100,
+      "name": "Mud",
+      "effects": [
+        {
+          "type": "grow",
+          "distance": 46
+        },
+        {
+          "type": "round",
+          "radius": 90,
+          "mode": "both"
+        },
+        {
+          "type": "ink",
+          "radius": 30,
+          "level": 0.45,
+          "noise": 0.18,
+          "scale": 340
+        },
+        {
+          "type": "pits",
+          "density": 0.1,
+          "size": 12,
+          "margin": 16
+        },
+        {
+          "type": "roughen",
+          "amount": 2.5,
+          "scale": 4,
+          "octaves": 2
+        }
+      ]
+    }
+  ],
+  "base": {
+    "width": 1.3,
+    "height": 1.0,
+    "slant": 0,
+    "tracking": 25
+  }
+}

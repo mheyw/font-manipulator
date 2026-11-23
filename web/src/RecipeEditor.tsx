@@ -115,6 +115,22 @@ export function RecipeEditor({ recipe, effects, onChange, activeStop, onSelectSt
       </section>
 
       <section>
+        <h3>Base shape</h3>
+        {([['width', 'Width', 0.4, 3, 0.01], ['height', 'Height', 0.4, 2, 0.01], ['slant', 'Slant°', -30, 30, 0.5],
+           ['tracking', 'Tracking', -150, 300, 1]] as const).map(([k, label, min, max, step]) => {
+          const base = recipe.base ?? { width: 1, height: 1, slant: 0, tracking: 0 }
+          return (
+            <label key={k} className="param" title="Applied to the source before every stop; width and tracking also change advance widths.">
+              <span>{label}</span>
+              <input type="range" min={min} max={max} step={step} value={base[k]}
+                onChange={(e) => onChange({ ...recipe, base: { ...base, [k]: Number(e.target.value) } })} />
+              <span className="num">{base[k]}</span>
+            </label>
+          )
+        })}
+      </section>
+
+      <section>
         <h3>Stops <button className="small" onClick={addStop}>+ stop</button></h3>
         <div className="stops">
           {recipe.stops.map((s, i) => (

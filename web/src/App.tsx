@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api, b64ToBuffer, type EffectSchema, type ExportStatus, type FontDesc, type GlyphResult, type Recipe } from './api'
 import { RecipeEditor } from './RecipeEditor'
+import { randomRecipe } from './randomRecipe'
 
 const STORE = 'fontmanip.recipe.v1'
 
@@ -66,12 +67,14 @@ export default function App() {
   const [job, setJob] = useState<string>('')
   const [jobStatus, setJobStatus] = useState<ExportStatus | null>(null)
   const [pin, setPin] = useState<Record<string, number>>({})
+  const [presets, setPresets] = useState<{ id: string; name: string; recipe: Recipe }[]>([])
   const counter = useRef(0)
   const fontFaces = useRef<FontFace[]>([])
   const testerRef = useRef<HTMLDivElement>(null)
   const testerInit = useRef(false)
 
   useEffect(() => {
+    api.presets().then(setPresets).catch(() => {})
     Promise.all([api.effects(), api.fonts(), api.defaultRecipe()]).then(([fx, fs, def]) => {
       setEffects(fx)
       setFonts(fs)
@@ -203,7 +206,21 @@ export default function App() {
           ) : null}
         </section>
         <section>
-          <h3>Recipe</h3>
+          <h3>Recipe
+            <button className="small dice" title="Random recipe for this font (keeps font, axis tag and export name)"
+              onClick={() => {
+                const rr = randomRecipe(effects, { output: recipe.output, quality: recipe.quality, axis: recipe.axis })
+                setRecipe(rr); setActiveStop(Math.min(1, rr.stops.length - 1))
+                setAxisValue(rr.stops[rr.stops.length - 1].position); setAnimate(false)
+              }}>🎲 random</button>
+          </h3>
+          <select value="" onChange={(e) => {
+            const p = presets.find((x) => x.id === e.target.value)
+            if (p) { setRecipe(structuredClone(p.recipe)); setActiveStop(Math.min(1, p.recipe.stops.length - 1)); setAxisValue(p.recipe.axis.default ?? p.recipe.stops[0].position) }
+          }}>
+            <option value="">load preset…</option>
+            {presets.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
           <input value={recipe.name} onChange={(e) => setRecipe({ ...recipe, name: e.target.value })} />
           <div className="row">
             <button className="small" onClick={saveRecipe}>save .json</button>

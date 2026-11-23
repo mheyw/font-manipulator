@@ -102,6 +102,21 @@ def get_default_recipe():
     return DEFAULT_RECIPE.model_dump()
 
 
+RECIPES_DIR = ROOT / "engine" / "recipes"
+
+
+@app.get("/api/recipes")
+def list_recipes():
+    out = [{"id": "default", "name": DEFAULT_RECIPE.name, "recipe": DEFAULT_RECIPE.model_dump()}]
+    for p in sorted(RECIPES_DIR.glob("*.json")):
+        try:
+            r = Recipe.load(p)
+            out.append({"id": p.stem, "name": r.name, "recipe": r.model_dump()})
+        except Exception:  # noqa: BLE001  (skip invalid preset files)
+            continue
+    return out
+
+
 @app.get("/api/fonts")
 def list_fonts():
     return [_describe(e) for e in FONTS.values()]

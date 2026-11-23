@@ -27,6 +27,22 @@ How to read these:
 - Licence/copyright name records and `fsType` copied from the source; Mac name records dropped.
 - Variable-source pinning in the UI.
 
+**Reference-driven effects (2026-11-23):** four reference images (kept locally in `examples/`, git-ignored) were
+approximated as presets. Side-by-side renders are in `examples/comparisons/`.
+
+| Preset | Reference look | New pieces it needed | Inter, all 2,933 glyphs (est.) |
+|---|---|---|---|
+| Motion smear | wide heavy italic dragged sideways, wavy bands, ragged | `smear`, `wave`, recipe `base` transform (scales advances), `axis.default` | ~10 min |
+| Mud inflate | puffy inflated letters, counters → dots, pitted grain | `pits`; uses grow + round | ~25 min (pits = many contours) |
+| Melt drip | localised patches melt into blobs and drip down | `melt`, `regions` on ink | ~6 min |
+| Marker bleed | sparse patches swell like soaked marker, odd doubled letter | `regions` on grow/echo, SDF-based patch blending | ~6 min |
+
+Notes:
+- **Regional effects blend shapes, not fields.** The SDF of clean and affected shapes is interpolated across patch edges; mixing raw fields made spurs and cracks.
+- **A font only knows one glyph at a time.** Patches can't span words or lines as in the posters, and a given letter is damaged the same way every time it appears. Possible later: OpenType alternates cycled with `calt`/`rand`.
+- **Pits are white specks.** A font is binary, so it can't reproduce grey print mottling.
+- **Performance:** placeholder anchoring and contour matching are now cropped to bounding boxes (the worst glyph went from 13.7 s to 1.7 s).
+
 **Known limitations:**
 - The **smooth → pixel transition is the weakest** (morph about 0.78): around DCAY 50 the default recipe looks messy, with pieces popping and counters flickering. In-betweens across big topology changes are morphs and can't be fresh effect results.
 - When a counter probably *opens* (a hairline breaks under ink), the closed counter can only shrink to a dot. In-betweens near that stop can briefly darken it (seen in Fraunces around DCAY 16, and the small ® in Source Sans). Workaround: add a stop in between, or use gentler ink on hairline fonts.

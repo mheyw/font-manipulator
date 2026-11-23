@@ -18,3 +18,6 @@ engine/uv.lock.bak
 
 # Claude Code local state
 .claude/
+
+# Reference images (not ours to publish)
+examples/

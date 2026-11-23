@@ -13,7 +13,10 @@ from fontTools.fontBuilder import FontBuilder
 from fontTools.otlLib.builder import buildStatTable
 from fontTools.pens.ttGlyphPen import TTGlyphPointPen
 from fontTools.ttLib import TTFont
-from fontTools.ttLib.tables._g_l_y_f import flagOverlapSimple
+from array import array
+
+from fontTools.ttLib.tables import ttProgram
+from fontTools.ttLib.tables._g_l_y_f import Glyph, GlyphCoordinates, flagOverlapSimple
 
 from .pipeline import GlyphResult
 from .recipe import Recipe
@@ -29,6 +32,27 @@ def _ps(s: str) -> str:
     return re.sub(r"[^A-Za-z0-9]", "", s)[:40] or "FontManip"
 
 
+def _empty_glyph() -> Glyph:
+    g = Glyph()
+    g.numberOfContours = 0
+    return g
+
+
+def _glyph(contours: list[np.ndarray], oncurve: list[np.ndarray]) -> Glyph:
+    """Build a simple TrueType glyph straight from point arrays (no per-point pen calls)."""
+    pts = np.concatenate(contours).astype(np.int64)
+    on = np.concatenate(oncurve).astype(np.uint8)
+    g = Glyph()
+    g.numberOfContours = len(contours)
+    g.coordinates = GlyphCoordinates(pts.tolist())
+    g.flags = array("B", on.tolist())
+    g.flags[0] |= flagOverlapSimple  # contours overlap by design
+    g.endPtsOfContours = (np.cumsum([len(c) for c in contours]) - 1).tolist()
+    g.program = ttProgram.Program()
+    g.program.fromBytecode(b"")
+    return g
+
+
 def _master(source: TTFont, order: list[str], results: dict[str, GlyphResult], k: int,
             family: str, style: str) -> TTFont:
     upm = source["head"].unitsPerEm
@@ -37,17 +61,8 @@ def _master(source: TTFont, order: list[str], results: dict[str, GlyphResult], k
     fb.setupCharacterMap(source.getBestCmap())
     glyphs = {}
     for name in order:
-        pen = TTGlyphPointPen(None)
         r = results.get(name)
-        for c, on in zip(r.masters[k], r.oncurve) if r else []:
-            pen.beginPath()
-            for (x, y), o in zip(c, on):
-                pen.addPoint((int(x), int(y)), "line" if o else None)
-            pen.endPath()
-        g = pen.glyph()
-        if g.numberOfContours > 0:
-            g.flags[0] |= flagOverlapSimple  # contours overlap by design
-        glyphs[name] = g
+        glyphs[name] = _glyph(r.masters[k], r.oncurve) if r and r.masters[k] else _empty_glyph()
     fb.setupGlyf(glyphs)
     glyf = fb.font["glyf"]
     hm = source["hmtx"]
@@ -55,7 +70,8 @@ def _master(source: TTFont, order: list[str], results: dict[str, GlyphResult], k
     for name in order:
         g = glyf[name]
         g.recalcBounds(glyf)
-        metrics[name] = (hm[name][0], getattr(g, "xMin", 0))
+        r = results.get(name)
+        metrics[name] = (r.advance if r else hm[name][0], getattr(g, "xMin", 0))
     fb.setupHorizontalMetrics(metrics)
     hh = source["hhea"]
     fb.setupHorizontalHeader(ascent=hh.ascent, descent=hh.descent, lineGap=hh.lineGap)
@@ -88,7 +104,8 @@ def build_variable_font(source: TTFont, recipe: Recipe, results: dict[str, Glyph
     ds = DesignSpaceDocument()
     a = AxisDescriptor()
     a.tag, a.name = ax.tag, ax.name
-    a.minimum, a.default, a.maximum = positions[0], positions[0], positions[-1]
+    di = recipe.default_index()
+    a.minimum, a.default, a.maximum = positions[0], positions[di], positions[-1]
     ds.addAxis(a)
     for k, stop in enumerate(recipe.stops):
         s = SourceDescriptor()
@@ -133,7 +150,7 @@ def build_variable_font(source: TTFont, recipe: Recipe, results: dict[str, Glyph
     name = vf["name"]
     name.removeNames(platformID=1)  # Mac records from FontBuilder would contradict the Windows ones
     ps = _ps(fam)
-    default_style = recipe.stops[0].name
+    default_style = recipe.stops[di].name
     for nid, val in {1: fam, 2: "Regular", 3: f"FontManip;{ps};{recipe.seed}", 4: f"{fam} {default_style}",
                      6: f"{ps}-{_ps(default_style)}", 16: fam, 17: default_style, 25: ps}.items():
         name.setName(val, nid, 3, 1, 0x409)
@@ -147,7 +164,7 @@ def build_variable_font(source: TTFont, recipe: Recipe, results: dict[str, Glyph
     name.setName("Version 1.000; generated with font-manipulator from: " +
                  (src_name.getDebugName(4) or "unknown source"), 5, 3, 1, 0x409)
     buildStatTable(vf, [{"tag": ax.tag, "name": ax.name, "values": [
-        {"value": s.position, "name": s.name, **({"flags": 0x2} if i == 0 else {})}
+        {"value": s.position, "name": s.name, **({"flags": 0x2} if i == di else {})}
         for i, s in enumerate(recipe.stops)]}], elidedFallbackName=default_style)
     return vf
 

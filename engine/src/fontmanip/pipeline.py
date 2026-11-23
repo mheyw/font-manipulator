@@ -12,8 +12,8 @@ import numpy as np
 from .compat import compatibilise
 from .effects import Ctx, GlyphState, apply_effect
 from .fontio import font_info, font_to_bytes, glyph_loops, load_font
-from .outline import flatten
-from .raster import Frame, sdf, seed_for
+from .outline import PackedFlattener
+from .raster import Frame, bbox, grow_box, sdf_box, seed_for
 from .recipe import Recipe
 
 
@@ -24,6 +24,7 @@ class GlyphResult:
     oncurve: list[np.ndarray]        # per contour: (K,) bool, shared by every stop
     fit: list[float]                 # per stop: IoU(rendered outline, effect target)
     morph: list[float]               # per transition: IoU(midpoint instance, SDF-blend reference)
+    advance: int = 0                 # advance width after the recipe's base transform
 
 
 def _frame_for(loops, advance, info, recipe: Recipe) -> Frame:
@@ -47,9 +48,18 @@ def process_glyph(font, recipe: Recipe, name: str) -> GlyphResult:
     gs = font.getGlyphSet()
     advance = font["hmtx"][name][0]
     src = glyph_loops(gs, name)
+    b = recipe.base
+    if not b.is_identity():
+        import math
+        t = math.tan(math.radians(b.slant))
+        yc = info.x_height / 2
+        src = [np.c_[c[:, 0] * b.width + (c[:, 1] * b.height - yc) * t, c[:, 1] * b.height] for c in src]
+        advance = max(0, int(round(advance * b.width + b.tracking * info.upm / 1000))) if advance else 0
+        if b.tracking:
+            src = [c + np.array([b.tracking * info.upm / 2000, 0.0]) for c in src]
     n = len(recipe.stops)
     if not src:
-        return GlyphResult(name, [[] for _ in range(n)], [], [1.0] * n, [1.0] * (n - 1))
+        return GlyphResult(name, [[] for _ in range(n)], [], [1.0] * n, [1.0] * (n - 1), advance)
     frame = _frame_for(src, advance, info, recipe)
     em = info.upm / 1000
     q = recipe.quality
@@ -58,7 +68,8 @@ def process_glyph(font, recipe: Recipe, name: str) -> GlyphResult:
     for si, stop in enumerate(recipe.stops):
         st = source_state if stop.base == "source" or si == 0 else states[-1]
         for ei, spec in enumerate(stop.effects):
-            ctx = Ctx(frame, info, name, advance, seed_for(recipe.seed, si, ei, spec.get("type")), em)
+            ctx = Ctx(frame, info, name, advance, seed_for(recipe.seed, si, ei, spec.get("type")), em,
+                      seed_for(recipe.seed, si, "stop"), recipe.seed)
             st = apply_effect(st, spec, ctx)
         states.append(st)
         if not stop.effects and stop.base == "source":
@@ -71,16 +82,22 @@ def process_glyph(font, recipe: Recipe, name: str) -> GlyphResult:
     oncurve = [f if q.outline == "smooth" else np.ones(len(f), bool) for f in corner_flags]
     rounded = [[np.rint(c).astype(np.int32) for c in m] for m in masters]
 
+    flat = PackedFlattener(oncurve)  # segment plan shared by every stop and midpoint
+
     def render(contours):
-        return frame.fill([flatten(c, on) for c, on in zip(contours, oncurve)])
+        return frame.winding_packed(flat(contours), flat.lengths) != 0
 
     fit = [_iou(render(m), t) for m, t in zip(rounded, masks)]
     morph = []
+    # SDF-blend references: only the sign of sdf(a) + sdf(b) is used, so each mask's SDF is
+    # computed once, on the common ink box of all stops (+1 px ring): identical references.
+    box = grow_box(bbox(np.logical_or.reduce(masks)), 1, masks[0].shape)
+    sdfs = [sdf_box(m, box) for m in masks] if n > 1 else []
     for a in range(n - 1):
         mid = [(x.astype(float) + y) / 2 for x, y in zip(rounded[a], rounded[a + 1])]
-        ref = (sdf(masks[a]) + sdf(masks[a + 1])) < 0
+        ref = (sdfs[a] + sdfs[a + 1]) < 0
         morph.append(_iou(render(mid), ref))
-    return GlyphResult(name, rounded, oncurve, fit, morph)
+    return GlyphResult(name, rounded, oncurve, fit, morph, advance)
 
 
 # ---------------------------------------------------------------- parallel

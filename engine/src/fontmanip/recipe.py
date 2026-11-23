@@ -14,6 +14,7 @@ from .effects import REGISTRY
 class Axis(BaseModel):
     tag: str = "DCAY"
     name: str = "Decay"
+    default: float | None = Field(None, description="Axis default (must be a stop position); first stop if unset")
 
     @field_validator("tag")
     @classmethod
@@ -48,6 +49,17 @@ class Quality(BaseModel):
     min_area: float = Field(60.0, ge=0, description="Drop traced specks smaller than this (u²)")
 
 
+class Base(BaseModel):
+    """Applied to the source before any stop, including outlines AND advance widths."""
+    width: float = Field(1.0, ge=0.2, le=4.0, description="Horizontal scale (advances scale too)")
+    height: float = Field(1.0, ge=0.2, le=4.0, description="Vertical scale from the baseline")
+    slant: float = Field(0.0, ge=-45, le=45, description="Oblique angle in degrees")
+    tracking: float = Field(0.0, ge=-300, le=600, description="Extra advance per glyph (u)")
+
+    def is_identity(self) -> bool:
+        return self.width == 1 and self.height == 1 and self.slant == 0 and self.tracking == 0
+
+
 class Output(BaseModel):
     family: str = "FontManip Decay"
 
@@ -58,6 +70,7 @@ class Recipe(BaseModel):
     axis: Axis = Axis()
     quality: Quality = Quality()
     output: Output = Output()
+    base: Base = Base()
     stops: list[Stop]
 
     @model_validator(mode="after")
@@ -69,7 +82,13 @@ class Recipe(BaseModel):
             raise ValueError("stop positions must be strictly increasing")
         if self.stops[0].base == "previous":
             raise ValueError("the first stop must be based on the source")
+        if self.axis.default is not None and self.axis.default not in pos:
+            raise ValueError("axis.default must equal one of the stop positions")
         return self
+
+    def default_index(self) -> int:
+        pos = [s.position for s in self.stops]
+        return pos.index(self.axis.default) if self.axis.default is not None else 0
 
     @classmethod
     def load(cls, path: str | Path) -> "Recipe":

@@ -1,0 +1,59 @@
+{
+  "default": {
+    "sec_per_glyph": 0.112,
+    "fit_mean": 0.9904,
+    "fit_min": 0.9762,
+    "morph_mean": 0.85,
+    "points": 3608,
+    "contours": 82
+  },
+  "motion-smear": {
+    "sec_per_glyph": 0.199,
+    "fit_mean": 0.9848,
+    "fit_min": 0.9429,
+    "morph_mean": 0.9218,
+    "points": 6645,
+    "contours": 152
+  },
+  "mud-inflate": {
+    "sec_per_glyph": 0.356,
+    "fit_mean": 0.9652,
+    "fit_min": 0.9526,
+    "morph_mean": 0.8776,
+    "points": 81192,
+    "contours": 6462
+  },
+  "melt-drip": {
+    "sec_per_glyph": 0.173,
+    "fit_mean": 0.9963,
+    "fit_min": 0.9934,
+    "morph_mean": 0.8849,
+    "points": 3519,
+    "contours": 45
+  },
+  "marker-bleed": {
+    "sec_per_glyph": 0.13,
+    "fit_mean": 0.9915,
+    "fit_min": 0.9867,
+    "morph_mean": 0.958,
+    "points": 2866,
+    "contours": 33
+  },
+  "kitchen-sink": {
+    "sec_per_glyph": 0.733,
+    "fit_mean": 0.9166,
+    "fit_min": 0.8377,
+    "morph_mean": 0.7503,
+    "points": 123262,
+    "contours": 9283
+  },
+  "fraunces-default": {
+    "sec_per_glyph": 0.137,
+    "fit_mean": 0.9887,
+    "fit_min": 0.9707,
+    "morph_mean": 0.8081,
+    "points": 3822,
+    "contours": 82
+  },
+  "_total_seconds": 22.08
+}

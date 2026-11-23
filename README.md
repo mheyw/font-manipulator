@@ -32,8 +32,9 @@ To use the UI without dev mode, build it once (`cd web && npm install && npm run
 Using it:
 1. Pick a bundled font or drop in your own OTF / TTF / WOFF / WOFF2. Variable fonts are pinned to an instance
    with the axis sliders.
-2. Edit the **stops** on the left. Each stop is a stage on the axis with its own effect stack
-   (ink spread, rough edges, grain, spatter, pixel grid, Ferro-style magnet grid, wobble, grow/shrink, round, skew).
+2. Pick a **preset** (Ink decay, Motion smear, Mud inflate, Melt drip, Marker bleed), or edit the **stops** on the
+   left. Each stop is a stage on the axis with its own effect stack. **Base shape** (width / height / slant /
+   tracking) reshapes the source first, including advance widths.
 3. Scrub the **DCAY** slider or tick *animate*. Click a letter to inspect its masters on the right.
 4. **Build full variable font** → download WOFF2 / TTF / recipe.json.
 
@@ -53,6 +54,23 @@ UI end-to-end test (server must be running on :8765): `cd web && npm run e2e`.
 Outputs: `<Family>-VF.ttf`, `<Family>-VF.woff2`, `recipe.json`, `report.json`.
 Use the font in CSS with `font-variation-settings: "DCAY" 50`.
 
+## Effects
+
+| Group | Effects |
+|---|---|
+| ink | Ink spread, Blur, Threshold, Grain, Spatter, Rough edges, Melt / drip, Pitted grain |
+| shape | Grow / shrink, Round corners |
+| grid | Pixel grid, Magnet grid (Ferro) |
+| distort | Smear / motion, Wave / shear bands, Echo / misprint, Wobble, Skew / scale |
+
+Ink spread, Grow, Rough edges, Smear, Melt and Echo have an **Affected area** control, so they hit random patches
+instead of the whole letter. Patches line up across all effects in the same stop.
+
+Presets live in `engine/recipes/*.json` and show up in the UI automatically.
+
+To compare a recipe with a reference image:
+`cd engine && uv run python compare_reference.py recipes/melt-drip.json ../fonts/Inter-Variable.ttf "wght=600" "Some text" ref.jpg out.png 64`
+
 ## How it works (short)
 
 1. Each **stop** on the axis is a chain of **effects** applied to the original glyph, or to the previous stop.
@@ -68,6 +86,6 @@ Full research and design notes: `docs/README.md` → `docs/00-proposal.md`.
 ## Fonts & licences
 
 `fonts/` contains Source Sans 3 (SIL OFL 1.1, Reserved Font Name "Source", so don't call outputs "Source …")
-and Fraunces variable (SIL OFL 1.1). Their licences are next to them.
+, Fraunces variable and Inter variable (both SIL OFL 1.1). Their licences are next to them.
 Only process fonts whose licence allows modification. Many commercial and trial EULAs forbid it, including
 the Mirage trial in `Mirage/` (see `docs/research/04-licensing.md`).
