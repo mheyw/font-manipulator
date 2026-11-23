@@ -1,0 +1,17 @@
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+engine/.venv/
+engine/out/
+web/node_modules/
+web/dist/
+out/
+
+# Commercial trial fonts: licence forbids sharing (see docs/research/04-licensing.md)
+Mirage/
+# Test renders made from the Mirage trial (derivatives): keep local only
+docs/evidence/spike-grid-snap.*
+docs/evidence/spike-magnet-stages.*
+web/e2e/*.png
+engine/uv.lock.bak

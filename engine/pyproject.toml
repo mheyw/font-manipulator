@@ -1,0 +1,34 @@
+[project]
+name = "fontmanip"
+version = "0.1.0"
+description = "Generate decayed / ink / blob variations of fonts as variable fonts"
+requires-python = ">=3.12,<3.15"
+dependencies = [
+  "fonttools[woff]>=4.68",
+  "skia-pathops>=0.9",
+  "numpy>=2.0",
+  "scipy>=1.14",
+  "scikit-image>=0.24",
+  "pydantic>=2.8",
+]
+
+[project.optional-dependencies]
+server = ["fastapi>=0.115", "uvicorn>=0.30", "python-multipart>=0.0.9"]
+validate = ["opentype-sanitizer>=9.2"]
+
+[project.scripts]
+fontmanip = "fontmanip.cli:main"
+fontmanip-serve = "fontmanip.server:main"
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fontmanip"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

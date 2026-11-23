@@ -1,0 +1,16 @@
+<!doctype html><html><head><meta charset="utf-8"><title>DCAY slider demo</title><style>
+@font-face{font-family:D;src:url(DecaySpike5.ttf)}
+body{font-family:system-ui;margin:30px}
+#t{font-family:D;font-size:140px;line-height:1.1;outline:none}
+label{font:14px monospace}
+</style></head><body>
+<label>DCAY <input id="s" type="range" min="0" max="100" value="0" style="width:500px"> <span id="v">0</span></label>
+<label><input id="a" type="checkbox"> animate</label>
+<div id="t" contenteditable>eagsB8i%@ Ferro</div>
+<p style="font:12px monospace;color:#888">Test font: Source Sans 3 (OFL) subset, 13 glyphs only (letters e a g s B 8 i % @ F r o). Masters: 0 source · 33 ink bleed · 66 pixels · 100 pixels melted to blobs.</p>
+<script>
+const s=document.getElementById('s'),v=document.getElementById('v'),t=document.getElementById('t'),a=document.getElementById('a');
+const set=x=>{t.style.fontVariationSettings=`'DCAY' ${x}`;v.textContent=Math.round(x)};
+s.oninput=()=>set(s.value);
+let ph=0;(function loop(){if(a.checked){ph+=0.01;const x=50-50*Math.cos(ph);s.value=x;set(x)}requestAnimationFrame(loop)})();
+</script></body></html>
